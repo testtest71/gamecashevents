@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Appariements - Tournoi</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        /* Ajout d'un style basique pour les tableaux de TOM */
+        table.report { border-collapse: collapse; width: 100%; max-width: 800px; margin-top: 20px; }
+        table.report th, table.report td { border: 1px solid #000; padding: 8px; text-align: left; }
+        table.report th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html">Appariements</a> | 
+        <a href="standings.html">Classement</a> | 
+        <a href="top8.html">Top 8</a>
+    </nav>
+
+    <h2>Appariements du Round en cours</h2>
+    
+    <div id="pairings-container">
+        <p>Chargement des appariements...</p>
+    </div>
+
+    <script>
+        // ⚠️ REMPLACE CES VALEURS PAR CELLES DE TON FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyA021XaX6w_0q7UV6k3irVnfsFTM75hlsk",
+            databaseURL: "https://tcg-hub-6718c-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "tcg-hub-6718c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Écoute en temps réel les changements sur la branche 'tournoi/pairings'
+        db.ref('tournoi/pairings').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('pairings-container').innerHTML = data;
+            } else {
+                document.getElementById('pairings-container').innerHTML = "<p>Aucun appariement disponible pour le moment.</p>";
+            }
+        });
+    </script>
+</body>
+</html>
