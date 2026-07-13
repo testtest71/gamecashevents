@@ -8,12 +8,13 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        /* CODE COULEUR ET DESIGN (Identique à l'index) */
+        /* CODE COULEUR ET DESIGN */
         :root {
             --bg-black: #000000;
             --text-white: #ffffff;
             --neon-green: #20C034;
             --dark-gray: #1a1a1a;
+            --danger-red: #ff4444;
         }
 
         body { 
@@ -87,9 +88,23 @@
             transition: background-color 0.3s;
         }
 
-        button:hover {
-            background-color: #179026;
-            color: #fff;
+        button:hover { background-color: #179026; color: #fff; }
+
+        /* ZONE DE DANGER */
+        .danger-section {
+            margin-top: 30px;
+            border-top: 2px dashed var(--danger-red);
+            padding-top: 20px;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-red);
+            color: white;
+            border: 1px solid #cc0000;
+        }
+
+        .btn-danger:hover {
+            background-color: #cc0000;
         }
 
         #admin-panel { display: none; }
@@ -131,11 +146,16 @@
                 <input type="file" id="file-standings" accept=".html">
                 <button onclick="uploadFile('file-standings', 'standings')">Envoyer Classement</button>
             </div>
+
+            <div class="danger-section">
+                <h3 style="color: var(--danger-red);">Zone de Danger</h3>
+                <p>Attention, cela effacera toutes les données du tournoi en cours.</p>
+                <button class="btn-danger" onclick="resetTournament()">Remettre à zéro le tournoi</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Ta configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA021XaX6w_0q7UV6k3irVnfsFTM75hlsk",
             databaseURL: "https://tcg-hub-6718c-default-rtdb.europe-west1.firebasedatabase.app/",
@@ -147,7 +167,6 @@
         }
         const db = firebase.database();
 
-        // Vérification du mot de passe
         function checkPassword() {
             const pwd = document.getElementById('password').value;
             if (pwd === "Vierge") {
@@ -158,7 +177,6 @@
             }
         }
 
-        // Fonction pour lire le fichier TOM et l'envoyer sur Firebase
         function uploadFile(inputId, dbNode) {
             const fileInput = document.getElementById(inputId);
             if (fileInput.files.length === 0) {
@@ -174,23 +192,49 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlContent, 'text/html');
                 
-                // Cherche le tableau généré par TOM
                 const table = doc.querySelector('table.report');
                 
                 if (table) {
                     db.ref('tournoi/' + dbNode).set(table.outerHTML)
                     .then(() => {
-                        document.getElementById('status-message').innerText = "Succès : " + dbNode + " mis à jour !";
-                        fileInput.value = ""; // Réinitialise le champ
+                        const statusMessage = document.getElementById('status-message');
+                        statusMessage.innerText = "Succès : " + dbNode + " mis à jour !";
+                        statusMessage.style.color = "var(--neon-green)";
+                        fileInput.value = ""; 
                     })
                     .catch((error) => {
                         alert("Erreur Firebase: " + error.message);
                     });
                 } else {
-                    alert("Erreur : Impossible de trouver un tableau valide dans ce fichier. Assurez-vous qu'il s'agit bien d'un export TOM HTML.");
+                    alert("Erreur : Impossible de trouver un tableau valide dans ce fichier.");
                 }
             };
             reader.readAsText(file);
+        }
+
+        // NOUVELLE FONCTION DE REMISE À ZÉRO
+        function resetTournament() {
+            // Demande de confirmation avant de tout casser
+            const isConfirmed = confirm("Êtes-vous sûr de vouloir supprimer toutes les données du tournoi (Appariements, Classements, Top 8) ? Cette action est irréversible.");
+            
+            if (isConfirmed) {
+                // On supprime le noeud 'tournoi' entier de la base de données
+                db.ref('tournoi').remove()
+                .then(() => {
+                    const statusMessage = document.getElementById('status-message');
+                    statusMessage.innerText = "Le tournoi a été entièrement remis à zéro.";
+                    statusMessage.style.color = "var(--danger-red)";
+                    
+                    // Remet la couleur verte après 4 secondes pour les prochains messages
+                    setTimeout(() => { 
+                        statusMessage.style.color = "var(--neon-green)"; 
+                        statusMessage.innerText = "";
+                    }, 4000);
+                })
+                .catch((error) => {
+                    alert("Erreur lors de la suppression : " + error.message);
+                });
+            }
         }
     </script>
 </body>
