@@ -2,50 +2,152 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Tournoi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Tournoi</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        #admin-panel { display: none; margin-top: 20px; }
-        .upload-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; }
+        /* CODE COULEUR ET DESIGN (Identique à l'index) */
+        :root {
+            --bg-black: #000000;
+            --text-white: #ffffff;
+            --neon-green: #20C034;
+            --dark-gray: #1a1a1a;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-black);
+            color: var(--text-white);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .header-logo {
+            max-width: 300px;
+            width: 80%;
+            margin: 30px auto;
+            display: block;
+        }
+
+        nav {
+            background-color: var(--dark-gray);
+            padding: 15px 0;
+            border-top: 2px solid var(--neon-green);
+            border-bottom: 2px solid var(--neon-green);
+            margin-bottom: 30px;
+        }
+
+        nav a {
+            color: var(--text-white);
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--neon-green);
+        }
+
+        /* STYLES SPÉCIFIQUES À L'ADMIN */
+        .admin-container {
+            background-color: var(--dark-gray);
+            border: 1px solid var(--neon-green);
+            max-width: 500px;
+            margin: 0 auto 30px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(32, 192, 52, 0.2);
+        }
+
+        input[type="password"], input[type="file"] {
+            width: 90%;
+            padding: 10px;
+            margin: 15px 0;
+            background-color: #000;
+            color: #fff;
+            border: 1px solid var(--neon-green);
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: var(--neon-green);
+            color: var(--bg-black);
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #179026;
+            color: #fff;
+        }
+
+        #admin-panel { display: none; }
+        .upload-section { margin-top: 20px; border-top: 1px dashed var(--neon-green); padding-top: 20px; }
     </style>
 </head>
 <body>
 
-    <h2>Accès Administrateur</h2>
-    <div id="login-section">
-        <input type="password" id="password" placeholder="Mot de passe">
-        <button onclick="checkPassword()">Valider</button>
-    </div>
+    <img src="logo.png" alt="Gamecash Gaming & Culture Geek" class="header-logo">
 
-    <div id="admin-panel">
-        <h3>Mise à jour du Tournoi</h3>
-        
-        <div class="upload-section">
-            <h4>1. Mettre à jour les Appariements (Pairings)</h4>
-            <input type="file" id="file-pairings" accept=".html">
-            <button onclick="uploadFile('file-pairings', 'pairings')">Envoyer Pairings</button>
+    <nav>
+        <a href="index.html">Appariements</a>
+        <a href="standings.html">Classement</a>
+        <a href="top8.html">Top 8</a>
+        <a href="admin.html" style="color: var(--neon-green);">Admin</a>
+    </nav>
+
+    <h2>Zone d'Administration</h2>
+
+    <div class="admin-container">
+        <div id="login-section">
+            <p>Veuillez entrer le mot de passe pour modifier le tournoi.</p>
+            <input type="password" id="password" placeholder="Mot de passe">
+            <br>
+            <button onclick="checkPassword()">Se connecter</button>
         </div>
 
-        <div class="upload-section">
-            <h4>2. Mettre à jour le Classement (Standings)</h4>
-            <input type="file" id="file-standings" accept=".html">
-            <button onclick="uploadFile('file-standings', 'standings')">Envoyer Classement</button>
+        <div id="admin-panel">
+            <p id="status-message" style="color: var(--neon-green); font-weight: bold;"></p>
+            
+            <div class="upload-section">
+                <h3>1. Mettre à jour les Appariements</h3>
+                <input type="file" id="file-pairings" accept=".html">
+                <button onclick="uploadFile('file-pairings', 'pairings')">Envoyer Pairings</button>
+            </div>
+
+            <div class="upload-section">
+                <h3>2. Mettre à jour le Classement</h3>
+                <input type="file" id="file-standings" accept=".html">
+                <button onclick="uploadFile('file-standings', 'standings')">Envoyer Classement</button>
+            </div>
         </div>
-        <p id="status-message" style="color: green;"></p>
     </div>
 
     <script>
-        // ⚠️ REMPLACE CES VALEURS PAR CELLES DE TON FIREBASE
+        // Ta configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA021XaX6w_0q7UV6k3irVnfsFTM75hlsk",
             databaseURL: "https://tcg-hub-6718c-default-rtdb.europe-west1.firebasedatabase.app/",
             projectId: "tcg-hub-6718c"
         };
-        firebase.initializeApp(firebaseConfig);
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.database();
 
+        // Vérification du mot de passe
         function checkPassword() {
             const pwd = document.getElementById('password').value;
             if (pwd === "Vierge") {
@@ -56,10 +158,11 @@
             }
         }
 
+        // Fonction pour lire le fichier TOM et l'envoyer sur Firebase
         function uploadFile(inputId, dbNode) {
             const fileInput = document.getElementById(inputId);
             if (fileInput.files.length === 0) {
-                alert("Veuillez sélectionner un fichier.");
+                alert("Veuillez sélectionner un fichier avant de cliquer sur Envoyer.");
                 return;
             }
 
@@ -68,25 +171,23 @@
 
             reader.onload = function(e) {
                 const htmlContent = e.target.result;
-                
-                // On utilise DOMParser pour lire le HTML du logiciel TOM
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlContent, 'text/html');
                 
-                // On récupère uniquement le tableau des données
+                // Cherche le tableau généré par TOM
                 const table = doc.querySelector('table.report');
                 
                 if (table) {
-                    // On envoie le HTML du tableau vers Firebase
                     db.ref('tournoi/' + dbNode).set(table.outerHTML)
                     .then(() => {
-                        document.getElementById('status-message').innerText = dbNode + " mis à jour avec succès !";
+                        document.getElementById('status-message').innerText = "Succès : " + dbNode + " mis à jour !";
+                        fileInput.value = ""; // Réinitialise le champ
                     })
                     .catch((error) => {
-                        console.error("Erreur Firebase: ", error);
+                        alert("Erreur Firebase: " + error.message);
                     });
                 } else {
-                    alert("Impossible de trouver le tableau dans ce fichier.");
+                    alert("Erreur : Impossible de trouver un tableau valide dans ce fichier. Assurez-vous qu'il s'agit bien d'un export TOM HTML.");
                 }
             };
             reader.readAsText(file);
