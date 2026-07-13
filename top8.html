@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 8 - Tournoi</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <style>
+        /* CODE COULEUR ET DESIGN */
+        :root {
+            --bg-black: #000000;
+            --text-white: #ffffff;
+            --neon-green: #20C034;
+            --dark-gray: #1a1a1a;
+            --gold: #FFD700;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-black);
+            color: var(--text-white);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .header-logo { max-width: 300px; width: 80%; margin: 30px auto; display: block; }
+
+        nav {
+            background-color: var(--dark-gray);
+            padding: 15px 0;
+            border-top: 2px solid var(--neon-green);
+            border-bottom: 2px solid var(--neon-green);
+            margin-bottom: 30px;
+        }
+        nav a { color: var(--text-white); text-decoration: none; margin: 0 15px; font-size: 1.1em; font-weight: bold; text-transform: uppercase; transition: color 0.3s ease; }
+        nav a:hover { color: var(--neon-green); }
+        nav a.admin-link { color: #555; font-size: 0.9em; }
+        nav a.admin-link:hover { color: var(--text-white); }
+
+        /* ARBRE DU TOP 8 (BRACKET) */
+        .bracket-wrapper {
+            width: 95%;
+            margin: 0 auto;
+            overflow-x: auto; /* Permet de scroller horizontalement sur mobile */
+            padding-bottom: 50px;
+        }
+        
+        .bracket {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            min-width: 800px; /* Force la largeur pour garder l'arbre intact */
+            margin-top: 30px;
+        }
+
+        .round {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 220px;
+        }
+
+        .match {
+            background-color: var(--dark-gray);
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin: 15px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .player {
+            padding: 10px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+            background-color: #0a0a0a;
+        }
+        .player:last-child { border-bottom: none; }
+        
+        .seed { font-size: 0.8em; color: #777; margin-right: 10px; }
+        .name { flex-grow: 1; text-align: left; }
+
+        /* EFFETS SPÉCIAUX (Demandés) */
+        .high-seed {
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+            border-left: 4px solid var(--neon-green);
+        }
+
+        .champion-container {
+            margin-top: 40px;
+            padding: 30px;
+            background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%);
+            border: 2px solid var(--gold);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+            display: inline-block;
+        }
+
+        .champion {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--gold);
+            text-shadow: 0 0 15px var(--gold), 0 0 30px rgba(255, 215, 0, 0.5);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="logo.png" alt="Gamecash Gaming & Culture Geek" class="header-logo">
+
+    <nav>
+        <a href="index.html">Appariements</a>
+        <a href="standings.html">Classement</a>
+        <a href="top8.html" style="color: var(--neon-green);">Top 8</a>
+        <a href="admin.html" class="admin-link">Admin</a>
+    </nav>
+
+    <h2 style="color: var(--neon-green);">Arbre Final - Top 8</h2>
+
+    <div class="bracket-wrapper" id="bracket-container">
+        <p>Le Top 8 n'a pas encore été généré.</p>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA021XaX6w_0q7UV6k3irVnfsFTM75hlsk",
+            databaseURL: "https://tcg-hub-6718c-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "tcg-hub-6718c"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database();
+
+        // Fonction pour générer le HTML d'un joueur
+        function pHTML(p1, p2) {
+            if (!p1 || !p1.name) return `<div class="player"><span class="seed">-</span><span class="name">TBD</span></div>`;
+            
+            let isHighSeed = false;
+            // Si P2 existe, on compare. Le seed le plus petit gagne le glow vert.
+            if (p2 && p2.name && p1.seed && p2.seed) {
+                isHighSeed = parseInt(p1.seed) < parseInt(p2.seed);
+            }
+            
+            const glowClass = isHighSeed ? 'high-seed' : '';
+            return `<div class="player ${glowClass}"><span class="seed">(${p1.seed})</span><span class="name">${p1.name}</span></div>`;
+        }
+
+        // Fonction pour générer un match entier
+        function matchHTML(matchObj) {
+            if (!matchObj) return `<div class="match">${pHTML(null, null)}${pHTML(null, null)}</div>`;
+            return `<div class="match">${pHTML(matchObj.p1, matchObj.p2)}${pHTML(matchObj.p2, matchObj.p1)}</div>`;
+        }
+
+        db.ref('tournoi/top8').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                let html = `<div class="bracket">`;
+                
+                // Colonne 1 : Quarts
+                html += `<div class="round">
+                            ${matchHTML(data.qf1)} ${matchHTML(data.qf2)} ${matchHTML(data.qf3)} ${matchHTML(data.qf4)} </div>`;
+                         
+                // Colonne 2 : Demies
+                html += `<div class="round" style="justify-content: space-around;">
+                            ${matchHTML(data.sf1)}
+                            ${matchHTML(data.sf2)}
+                         </div>`;
+                         
+                // Colonne 3 : Finale
+                html += `<div class="round" style="justify-content: center;">
+                            ${matchHTML(data.final)}
+                         </div>`;
+                html += `</div>`; // Fin bracket
+
+                // Grand Gagnant
+                if (data.winner && data.winner.name) {
+                    html += `
+                    <div class="champion-container">
+                        <h3 style="color: #aaa; margin-top:0;">Gagnant du Tournoi</h3>
+                        <div class="champion">🏆 ${data.winner.name} 🏆</div>
+                    </div>`;
+                }
+
+                document.getElementById('bracket-container').innerHTML = html;
+            } else {
+                document.getElementById('bracket-container').innerHTML = "<p>Le Top 8 n'a pas encore commencé.</p>";
+            }
+        });
+    </script>
+</body>
+</html>
