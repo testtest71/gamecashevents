@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement - Tournoi</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <style>
+        /* CODE COULEUR ET DESIGN */
+        :root {
+            --bg-black: #000000;
+            --text-white: #ffffff;
+            --neon-green: #20C034;
+            --dark-gray: #1a1a1a;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-black);
+            color: var(--text-white);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .header-logo {
+            max-width: 300px;
+            width: 80%;
+            margin: 30px auto;
+            display: block;
+        }
+
+        nav {
+            background-color: var(--dark-gray);
+            padding: 15px 0;
+            border-top: 2px solid var(--neon-green);
+            border-bottom: 2px solid var(--neon-green);
+            margin-bottom: 30px;
+        }
+
+        nav a {
+            color: var(--text-white);
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover { color: var(--neon-green); }
+        
+        nav a.admin-link { color: #555; font-size: 0.9em; }
+        nav a.admin-link:hover { color: var(--text-white); }
+
+        /* TABLEAUX */
+        #standings-container {
+            width: 95%;
+            max-width: 600px; /* Un peu plus étroit car moins de colonnes */
+            margin: 0 auto 40px auto;
+            overflow-x: auto;
+        }
+
+        table.report { 
+            border-collapse: collapse; 
+            width: 100%; 
+            background-color: var(--dark-gray);
+            box-shadow: 0 0 10px rgba(32, 192, 52, 0.2);
+        }
+
+        table.report th, table.report td { 
+            border: 1px solid var(--neon-green); 
+            padding: 12px; 
+            text-align: center; 
+        }
+
+        table.report th { 
+            background-color: #0d0d0d; 
+            color: var(--neon-green);
+            font-size: 1.1em;
+        }
+
+        table.report tr:nth-child(even) {
+            background-color: #111111;
+        }
+        
+        /* Mettre en valeur le top 3 (optionnel mais sympa) */
+        table.report tr:nth-child(1) td { font-weight: bold; color: #FFD700; } /* Or */
+        table.report tr:nth-child(2) td { font-weight: bold; color: #C0C0C0; } /* Argent */
+        table.report tr:nth-child(3) td { font-weight: bold; color: #CD7F32; } /* Bronze */
+    </style>
+</head>
+<body>
+
+    <img src="logo.png" alt="Gamecash Gaming & Culture Geek" class="header-logo">
+
+    <nav>
+        <a href="index.html">Appariements</a>
+        <a href="standings.html" style="color: var(--neon-green);">Classement</a>
+        <a href="top8.html">Top 8</a>
+        <a href="admin.html" class="admin-link">Admin</a>
+    </nav>
+
+    <h2 style="color: var(--neon-green);">Classement Général</h2>
+    
+    <div id="standings-container">
+        <p>Chargement du classement en cours...</p>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA021XaX6w_0q7UV6k3irVnfsFTM75hlsk",
+            databaseURL: "https://tcg-hub-6718c-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "tcg-hub-6718c"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        db.ref('tournoi/standings').on('value', (snapshot) => {
+            const rawHtml = snapshot.val();
+            
+            if (rawHtml) {
+                // On crée un parser pour lire le tableau TOM brut reçu de Firebase
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(rawHtml, 'text/html');
+                const originalTable = doc.querySelector('table');
+                
+                if (originalTable) {
+                    // On prépare le nouveau tableau épuré
+                    let newTableHtml = '<table class="report"><thead><tr>';
+                    newTableHtml += '<th>#</th><th>Joueur</th><th>Points</th>';
+                    newTableHtml += '</tr></thead><tbody>';
+                    
+                    const rows = originalTable.querySelectorAll('tr');
+                    
+                    // On boucle sur toutes les lignes (en ignorant la première qui contient les vieux en-têtes)
+                    for (let i = 1; i < rows.length; i++) {
+                        const cells = rows[i].querySelectorAll('td, th');
+                        
+                        // TOM génère parfois des lignes vides, on vérifie qu'il y a assez de colonnes
+                        if (cells.length >= 6) { 
+                            const rank = cells[0].innerText.trim();
+                            const name = cells[1].innerText.trim();
+                            const points = cells[5].innerText.trim(); // La colonne 6 (index 5) correspond aux "Points de matchs"
+                            
+                            newTableHtml += `<tr><td>${rank}</td><td>${name}</td><td>${points}</td></tr>`;
+                        }
+                    }
+                    
+                    newTableHtml += '</tbody></table>';
+                    document.getElementById('standings-container').innerHTML = newTableHtml;
+                } else {
+                    document.getElementById('standings-container').innerHTML = "<p>Erreur lors de l'affichage du classement.</p>";
+                }
+            } else {
+                document.getElementById('standings-container').innerHTML = "<p>Aucun classement disponible pour le moment.</p>";
+            }
+        });
+    </script>
+</body>
+</html>
