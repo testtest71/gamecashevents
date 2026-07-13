@@ -12,7 +12,7 @@
         :root {
             --bg-black: #000000;
             --text-white: #ffffff;
-            --neon-green: #20C034; /* Vert inspiré de ton logo */
+            --neon-green: #20C034;
             --dark-gray: #1a1a1a;
         }
 
@@ -25,15 +25,13 @@
             text-align: center;
         }
 
-        /* LOGO */
         .header-logo {
-            max-width: 300px; /* Taille ajustable */
+            max-width: 300px;
             width: 80%;
             margin: 30px auto;
             display: block;
         }
 
-        /* BARRE DE NAVIGATION */
         nav {
             background-color: var(--dark-gray);
             padding: 15px 0;
@@ -52,25 +50,15 @@
             transition: color 0.3s ease;
         }
 
-        nav a:hover {
-            color: var(--neon-green);
-        }
+        nav a:hover { color: var(--neon-green); }
+        nav a.admin-link { color: #555; font-size: 0.9em; }
+        nav a.admin-link:hover { color: var(--text-white); }
 
-        /* Lien admin plus discret */
-        nav a.admin-link {
-            color: #555;
-            font-size: 0.9em;
-        }
-        nav a.admin-link:hover {
-            color: var(--text-white);
-        }
-
-        /* TABLEAUX GÉNÉRÉS PAR TOM */
         #pairings-container {
             width: 95%;
-            max-width: 800px;
-            margin: 0 auto;
-            overflow-x: auto; /* Permet de scroller sur téléphone si le tableau est large */
+            max-width: 900px;
+            margin: 0 auto 40px auto;
+            overflow-x: auto;
         }
 
         table.report { 
@@ -95,6 +83,12 @@
         table.report tr:nth-child(even) {
             background-color: #111111;
         }
+
+        .vs-text {
+            color: var(--neon-green);
+            font-weight: bold;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -115,7 +109,6 @@
     </div>
 
     <script>
-        // Ta configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA021XaX6w_0q7UV6k3irVnfsFTM75hlsk",
             databaseURL: "https://tcg-hub-6718c-default-rtdb.europe-west1.firebasedatabase.app/",
@@ -127,11 +120,79 @@
         }
         const db = firebase.database();
 
-        // Écoute en temps réel les changements sur la branche 'tournoi/pairings'
         db.ref('tournoi/pairings').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('pairings-container').innerHTML = data;
+            const rawHtml = snapshot.val();
+            
+            if (rawHtml) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(rawHtml, 'text/html');
+                const originalTable = doc.querySelector('table');
+                
+                if (originalTable) {
+                    const rows = originalTable.querySelectorAll('tr');
+                    
+                    const matches = new Map(); // Pour stocker les matchs uniques par numéro de table
+                    const byes = []; // Pour stocker les joueurs en "Bye" séparément
+                    
+                    // On boucle sur toutes les lignes (en ignorant les en-têtes)
+                    for (let i = 1; i < rows.length; i++) {
+                        const cells = rows[i].querySelectorAll('td, th');
+                        
+                        if (cells.length >= 4) { 
+                            const tableStr = cells[0].innerText.trim();
+                            const player1 = cells[1].innerText.trim();
+                            const player2 = cells[3].innerText.trim();
+                            
+                            // Si c'est un BYE
+                            if (tableStr.toLowerCase() === 'bye') {
+                                byes.push({ tableStr, player1, player2 });
+                            } else {
+                                // C'est une table numérotée
+                                const tableNum = parseInt(tableStr, 10);
+                                if (!isNaN(tableNum)) {
+                                    // Si on n'a pas encore vu cette table, on l'enregistre (Dédoublonnage)
+                                    if (!matches.has(tableNum)) {
+                                        matches.set(tableNum, { tableNum, player1, player2 });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // On transforme les matchs en liste et on les trie de 1 à l'infini
+                    let sortedMatches = Array.from(matches.values());
+                    sortedMatches.sort((a, b) => a.tableNum - b.tableNum);
+                    
+                    // On prépare le HTML propre à afficher
+                    let newTableHtml = '<table class="report"><thead><tr>';
+                    newTableHtml += '<th>Table</th><th>Joueur 1</th><th></th><th>Joueur 2</th>';
+                    newTableHtml += '</tr></thead><tbody>';
+                    
+                    // On ajoute les matchs triés
+                    sortedMatches.forEach(match => {
+                        newTableHtml += `<tr>
+                            <td><strong>${match.tableNum}</strong></td>
+                            <td>${match.player1}</td>
+                            <td class="vs-text">VS</td>
+                            <td>${match.player2}</td>
+                        </tr>`;
+                    });
+
+                    // On ajoute les BYE à la toute fin du tableau
+                    byes.forEach(bye => {
+                        newTableHtml += `<tr>
+                            <td style="color: #777;"><em>${bye.tableStr}</em></td>
+                            <td>${bye.player1}</td>
+                            <td></td>
+                            <td>${bye.player2}</td>
+                        </tr>`;
+                    });
+                    
+                    newTableHtml += '</tbody></table>';
+                    document.getElementById('pairings-container').innerHTML = newTableHtml;
+                } else {
+                    document.getElementById('pairings-container').innerHTML = "<p>Erreur lors de l'affichage des appariements.</p>";
+                }
             } else {
                 document.getElementById('pairings-container').innerHTML = "<p>Aucun appariement disponible pour le moment.</p>";
             }
