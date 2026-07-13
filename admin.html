@@ -15,100 +15,38 @@
             --neon-green: #20C034;
             --dark-gray: #1a1a1a;
             --danger-red: #ff4444;
+            --gold: #FFD700;
         }
 
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: var(--bg-black);
-            color: var(--text-white);
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-black); color: var(--text-white); margin: 0; padding: 0; text-align: center; }
+        .header-logo { max-width: 300px; width: 80%; margin: 30px auto; display: block; }
+        
+        nav { background-color: var(--dark-gray); padding: 15px 0; border-top: 2px solid var(--neon-green); border-bottom: 2px solid var(--neon-green); margin-bottom: 30px; }
+        nav a { color: var(--text-white); text-decoration: none; margin: 0 15px; font-size: 1.1em; font-weight: bold; text-transform: uppercase; transition: color 0.3s ease; }
+        nav a:hover { color: var(--neon-green); }
 
-        .header-logo {
-            max-width: 300px;
-            width: 80%;
-            margin: 30px auto;
-            display: block;
+        .admin-container { background-color: var(--dark-gray); border: 1px solid var(--neon-green); max-width: 800px; margin: 0 auto 30px auto; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(32, 192, 52, 0.2); }
+        
+        input[type="password"], input[type="file"], input[type="text"], input[type="number"] {
+            padding: 10px; margin: 5px; background-color: #000; color: #fff; border: 1px solid var(--neon-green); border-radius: 4px;
         }
-
-        nav {
-            background-color: var(--dark-gray);
-            padding: 15px 0;
-            border-top: 2px solid var(--neon-green);
-            border-bottom: 2px solid var(--neon-green);
-            margin-bottom: 30px;
-        }
-
-        nav a {
-            color: var(--text-white);
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 1.1em;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: color 0.3s ease;
-        }
-
-        nav a:hover {
-            color: var(--neon-green);
-        }
-
-        /* STYLES SPÉCIFIQUES À L'ADMIN */
-        .admin-container {
-            background-color: var(--dark-gray);
-            border: 1px solid var(--neon-green);
-            max-width: 500px;
-            margin: 0 auto 30px auto;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(32, 192, 52, 0.2);
-        }
-
-        input[type="password"], input[type="file"] {
-            width: 90%;
-            padding: 10px;
-            margin: 15px 0;
-            background-color: #000;
-            color: #fff;
-            border: 1px solid var(--neon-green);
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: var(--neon-green);
-            color: var(--bg-black);
-            border: none;
-            padding: 10px 20px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
+        
+        button { background-color: var(--neon-green); color: var(--bg-black); border: none; padding: 10px 20px; font-size: 1em; font-weight: bold; cursor: pointer; border-radius: 4px; transition: background-color 0.3s; margin-top: 10px;}
         button:hover { background-color: #179026; color: #fff; }
 
-        /* ZONE DE DANGER */
-        .danger-section {
-            margin-top: 30px;
-            border-top: 2px dashed var(--danger-red);
-            padding-top: 20px;
-        }
-
-        .btn-danger {
-            background-color: var(--danger-red);
-            color: white;
-            border: 1px solid #cc0000;
-        }
-
-        .btn-danger:hover {
-            background-color: #cc0000;
-        }
+        .danger-section { margin-top: 40px; border-top: 2px dashed var(--danger-red); padding-top: 20px; }
+        .btn-danger { background-color: var(--danger-red); color: white; border: 1px solid #cc0000; }
+        .btn-danger:hover { background-color: #cc0000; }
 
         #admin-panel { display: none; }
-        .upload-section { margin-top: 20px; border-top: 1px dashed var(--neon-green); padding-top: 20px; }
+        .upload-section { margin-top: 30px; border-top: 1px dashed var(--neon-green); padding-top: 20px; text-align: left; }
+        
+        /* Grille pour le Top 8 */
+        .match-group { background: #0a0a0a; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #333;}
+        .match-group h4 { margin-top: 0; color: var(--neon-green); border-bottom: 1px solid #333; padding-bottom: 5px;}
+        .player-inputs { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .player-inputs input[type="text"] { flex-grow: 1; }
+        .player-inputs input[type="number"] { width: 60px; }
     </style>
 </head>
 <body>
@@ -133,24 +71,85 @@
         </div>
 
         <div id="admin-panel">
-            <p id="status-message" style="color: var(--neon-green); font-weight: bold;"></p>
+            <p id="status-message" style="color: var(--neon-green); font-weight: bold; text-align: center; font-size: 1.2em;"></p>
             
             <div class="upload-section">
-                <h3>1. Mettre à jour les Appariements</h3>
+                <h3>1. Mettre à jour les Appariements (Fichier TOM)</h3>
                 <input type="file" id="file-pairings" accept=".html">
                 <button onclick="uploadFile('file-pairings', 'pairings')">Envoyer Pairings</button>
             </div>
 
             <div class="upload-section">
-                <h3>2. Mettre à jour le Classement</h3>
+                <h3>2. Mettre à jour le Classement (Fichier TOM)</h3>
                 <input type="file" id="file-standings" accept=".html">
                 <button onclick="uploadFile('file-standings', 'standings')">Envoyer Classement</button>
             </div>
 
-            <div class="danger-section">
+            <div class="upload-section">
+                <h3>3. Gestion du Top 8 (Manuel)</h3>
+                <p style="font-size: 0.9em; color: #aaa;">Remplissez les Noms et les Seeds (1 à 8). Laissez vide si le joueur n'est pas encore défini.</p>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <h4 style="color: #fff;">Quarts de finale</h4>
+                        <div class="match-group">
+                            <h4>Match A (1 vs 8)</h4>
+                            <div class="player-inputs"><input type="text" id="qf1-n1" placeholder="Nom Joueur 1"><input type="number" id="qf1-s1" placeholder="Seed"></div>
+                            <div class="player-inputs"><input type="text" id="qf1-n2" placeholder="Nom Joueur 2"><input type="number" id="qf1-s2" placeholder="Seed"></div>
+                        </div>
+                        <div class="match-group">
+                            <h4>Match B (3 vs 6)</h4>
+                            <div class="player-inputs"><input type="text" id="qf2-n1" placeholder="Nom Joueur 1"><input type="number" id="qf2-s1" placeholder="Seed"></div>
+                            <div class="player-inputs"><input type="text" id="qf2-n2" placeholder="Nom Joueur 2"><input type="number" id="qf2-s2" placeholder="Seed"></div>
+                        </div>
+                        <div class="match-group">
+                            <h4>Match C (4 vs 5)</h4>
+                            <div class="player-inputs"><input type="text" id="qf3-n1" placeholder="Nom Joueur 1"><input type="number" id="qf3-s1" placeholder="Seed"></div>
+                            <div class="player-inputs"><input type="text" id="qf3-n2" placeholder="Nom Joueur 2"><input type="number" id="qf3-s2" placeholder="Seed"></div>
+                        </div>
+                        <div class="match-group">
+                            <h4>Match D (2 vs 7)</h4>
+                            <div class="player-inputs"><input type="text" id="qf4-n1" placeholder="Nom Joueur 1"><input type="number" id="qf4-s1" placeholder="Seed"></div>
+                            <div class="player-inputs"><input type="text" id="qf4-n2" placeholder="Nom Joueur 2"><input type="number" id="qf4-s2" placeholder="Seed"></div>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1; min-width: 300px;">
+                        <h4 style="color: #fff;">Demi-finales</h4>
+                        <div class="match-group">
+                            <h4>Demi 1 (Gagnant A vs Gagnant B)</h4>
+                            <div class="player-inputs"><input type="text" id="sf1-n1" placeholder="Nom Joueur 1"><input type="number" id="sf1-s1" placeholder="Seed"></div>
+                            <div class="player-inputs"><input type="text" id="sf1-n2" placeholder="Nom Joueur 2"><input type="number" id="sf1-s2" placeholder="Seed"></div>
+                        </div>
+                        <div class="match-group">
+                            <h4>Demi 2 (Gagnant C vs Gagnant D)</h4>
+                            <div class="player-inputs"><input type="text" id="sf2-n1" placeholder="Nom Joueur 1"><input type="number" id="sf2-s1" placeholder="Seed"></div>
+                            <div class="player-inputs"><input type="text" id="sf2-n2" placeholder="Nom Joueur 2"><input type="number" id="sf2-s2" placeholder="Seed"></div>
+                        </div>
+
+                        <h4 style="color: #fff; margin-top: 30px;">Finale</h4>
+                        <div class="match-group">
+                            <h4>Grande Finale</h4>
+                            <div class="player-inputs"><input type="text" id="f-n1" placeholder="Nom Joueur 1"><input type="number" id="f-s1" placeholder="Seed"></div>
+                            <div class="player-inputs"><input type="text" id="f-n2" placeholder="Nom Joueur 2"><input type="number" id="f-s2" placeholder="Seed"></div>
+                        </div>
+
+                        <h4 style="color: var(--gold); margin-top: 30px;">🏆 Grand Gagnant</h4>
+                        <div class="match-group" style="border-color: var(--gold);">
+                            <div class="player-inputs"><input type="text" id="w-n" placeholder="Nom du Champion !"><input type="number" id="w-s" placeholder="Seed"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="saveTop8()" style="padding: 15px 30px; font-size: 1.2em;">Sauvegarder le Top 8</button>
+                </div>
+            </div>
+
+            <div class="danger-section" style="text-align: center;">
                 <h3 style="color: var(--danger-red);">Zone de Danger</h3>
-                <p>Attention, cela effacera toutes les données du tournoi en cours.</p>
-                <button class="btn-danger" onclick="resetTournament()">Remettre à zéro le tournoi</button>
+                <p>Attention, cela effacera TOUTES les données (Appariements, Classements, Top 8).</p>
+                <button class="btn-danger" onclick="resetTournament()">Remettre à zéro le tournoi entier</button>
             </div>
         </div>
     </div>
@@ -161,10 +160,7 @@
             databaseURL: "https://tcg-hub-6718c-default-rtdb.europe-west1.firebasedatabase.app/",
             projectId: "tcg-hub-6718c"
         };
-        
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
 
         function checkPassword() {
@@ -172,69 +168,100 @@
             if (pwd === "Vierge") {
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
+                loadTop8IntoForm(); // Charge les données existantes si on rafraîchit la page
             } else {
                 alert("Mot de passe incorrect !");
             }
         }
 
+        // Fichiers TOM
         function uploadFile(inputId, dbNode) {
             const fileInput = document.getElementById(inputId);
-            if (fileInput.files.length === 0) {
-                alert("Veuillez sélectionner un fichier avant de cliquer sur Envoyer.");
-                return;
-            }
+            if (fileInput.files.length === 0) { alert("Veuillez sélectionner un fichier."); return; }
 
-            const file = fileInput.files[0];
             const reader = new FileReader();
-
             reader.onload = function(e) {
-                const htmlContent = e.target.result;
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlContent, 'text/html');
-                
+                const doc = new DOMParser().parseFromString(e.target.result, 'text/html');
                 const table = doc.querySelector('table.report');
-                
                 if (table) {
-                    db.ref('tournoi/' + dbNode).set(table.outerHTML)
-                    .then(() => {
-                        const statusMessage = document.getElementById('status-message');
-                        statusMessage.innerText = "Succès : " + dbNode + " mis à jour !";
-                        statusMessage.style.color = "var(--neon-green)";
+                    db.ref('tournoi/' + dbNode).set(table.outerHTML).then(() => {
+                        showMessage("Succès : " + dbNode + " mis à jour !", "var(--neon-green)");
                         fileInput.value = ""; 
-                    })
-                    .catch((error) => {
-                        alert("Erreur Firebase: " + error.message);
                     });
-                } else {
-                    alert("Erreur : Impossible de trouver un tableau valide dans ce fichier.");
-                }
+                } else { alert("Tableau invalide."); }
             };
-            reader.readAsText(file);
+            reader.readAsText(fileInput.files[0]);
         }
 
-        // NOUVELLE FONCTION DE REMISE À ZÉRO
+        // Gestion du Top 8
+        function getP(idPrefix) {
+            return {
+                name: document.getElementById(idPrefix + '-n').value.trim(),
+                seed: document.getElementById(idPrefix + '-s').value.trim()
+            };
+        }
+
+        function saveTop8() {
+            const top8Data = {
+                qf1: { p1: getP('qf1-n1', 'qf1-s1', 1), p2: getP('qf1-n2', 'qf1-s2', 2) },
+                qf2: { p1: getP('qf2-n1', 'qf2-s1', 1), p2: getP('qf2-n2', 'qf2-s2', 2) },
+                qf3: { p1: getP('qf3-n1', 'qf3-s1', 1), p2: getP('qf3-n2', 'qf3-s2', 2) },
+                qf4: { p1: getP('qf4-n1', 'qf4-s1', 1), p2: getP('qf4-n2', 'qf4-s2', 2) },
+                sf1: { p1: getP('sf1-n1', 'sf1-s1', 1), p2: getP('sf1-n2', 'sf1-s2', 2) },
+                sf2: { p1: getP('sf2-n1', 'sf2-s1', 1), p2: getP('sf2-n2', 'sf2-s2', 2) },
+                final: { p1: getP('f-n1', 'f-s1', 1), p2: getP('f-n2', 'f-s2', 2) },
+                winner: { name: document.getElementById('w-n').value.trim(), seed: document.getElementById('w-s').value.trim() }
+            };
+
+            // Fonction helper corrigée pour correspondre aux ID
+            function getP(nId, sId) {
+                return { name: document.getElementById(nId).value.trim(), seed: document.getElementById(sId).value.trim() };
+            }
+
+            db.ref('tournoi/top8').set(top8Data).then(() => {
+                showMessage("L'arbre du Top 8 a été sauvegardé avec succès !", "var(--neon-green)");
+            });
+        }
+
+        // Charge les données dans le formulaire pour ne pas tout retaper
+        function loadTop8IntoForm() {
+            db.ref('tournoi/top8').once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+                
+                const setV = (id, val) => { if (document.getElementById(id) && val) document.getElementById(id).value = val; };
+                
+                ['qf1','qf2','qf3','qf4','sf1','sf2'].forEach(m => {
+                    if(data[m]) {
+                        setV(`${m}-n1`, data[m].p1.name); setV(`${m}-s1`, data[m].p1.seed);
+                        setV(`${m}-n2`, data[m].p2.name); setV(`${m}-s2`, data[m].p2.seed);
+                    }
+                });
+                if(data.final) {
+                    setV(`f-n1`, data.final.p1.name); setV(`f-s1`, data.final.p1.seed);
+                    setV(`f-n2`, data.final.p2.name); setV(`f-s2`, data.final.p2.seed);
+                }
+                if(data.winner) {
+                    setV(`w-n`, data.winner.name); setV(`w-s`, data.winner.seed);
+                }
+            });
+        }
+
         function resetTournament() {
-            // Demande de confirmation avant de tout casser
-            const isConfirmed = confirm("Êtes-vous sûr de vouloir supprimer toutes les données du tournoi (Appariements, Classements, Top 8) ? Cette action est irréversible.");
-            
-            if (isConfirmed) {
-                // On supprime le noeud 'tournoi' entier de la base de données
-                db.ref('tournoi').remove()
-                .then(() => {
-                    const statusMessage = document.getElementById('status-message');
-                    statusMessage.innerText = "Le tournoi a été entièrement remis à zéro.";
-                    statusMessage.style.color = "var(--danger-red)";
-                    
-                    // Remet la couleur verte après 4 secondes pour les prochains messages
-                    setTimeout(() => { 
-                        statusMessage.style.color = "var(--neon-green)"; 
-                        statusMessage.innerText = "";
-                    }, 4000);
-                })
-                .catch((error) => {
-                    alert("Erreur lors de la suppression : " + error.message);
+            if (confirm("Êtes-vous sûr de vouloir tout effacer ?")) {
+                db.ref('tournoi').remove().then(() => {
+                    showMessage("Le tournoi a été remis à zéro.", "var(--danger-red)");
+                    // Vider les champs du Top 8
+                    document.querySelectorAll('.player-inputs input').forEach(input => input.value = '');
                 });
             }
+        }
+
+        function showMessage(msg, color) {
+            const status = document.getElementById('status-message');
+            status.innerText = msg;
+            status.style.color = color;
+            setTimeout(() => { status.innerText = ""; }, 5000);
         }
     </script>
 </body>
