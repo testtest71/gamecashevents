@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Tournoi</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #admin-panel { display: none; margin-top: 20px; }
+        .upload-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+    <h2>Accès Administrateur</h2>
+    <div id="login-section">
+        <input type="password" id="password" placeholder="Mot de passe">
+        <button onclick="checkPassword()">Valider</button>
+    </div>
+
+    <div id="admin-panel">
+        <h3>Mise à jour du Tournoi</h3>
+        
+        <div class="upload-section">
+            <h4>1. Mettre à jour les Appariements (Pairings)</h4>
+            <input type="file" id="file-pairings" accept=".html">
+            <button onclick="uploadFile('file-pairings', 'pairings')">Envoyer Pairings</button>
+        </div>
+
+        <div class="upload-section">
+            <h4>2. Mettre à jour le Classement (Standings)</h4>
+            <input type="file" id="file-standings" accept=".html">
+            <button onclick="uploadFile('file-standings', 'standings')">Envoyer Classement</button>
+        </div>
+        <p id="status-message" style="color: green;"></p>
+    </div>
+
+    <script>
+        // ⚠️ REMPLACE CES VALEURS PAR CELLES DE TON FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyA021XaX6w_0q7UV6k3irVnfsFTM75hlsk",
+            databaseURL: "https://tcg-hub-6718c-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "tcg-hub-6718c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function checkPassword() {
+            const pwd = document.getElementById('password').value;
+            if (pwd === "Vierge") {
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+            } else {
+                alert("Mot de passe incorrect !");
+            }
+        }
+
+        function uploadFile(inputId, dbNode) {
+            const fileInput = document.getElementById(inputId);
+            if (fileInput.files.length === 0) {
+                alert("Veuillez sélectionner un fichier.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const htmlContent = e.target.result;
+                
+                // On utilise DOMParser pour lire le HTML du logiciel TOM
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+                
+                // On récupère uniquement le tableau des données
+                const table = doc.querySelector('table.report');
+                
+                if (table) {
+                    // On envoie le HTML du tableau vers Firebase
+                    db.ref('tournoi/' + dbNode).set(table.outerHTML)
+                    .then(() => {
+                        document.getElementById('status-message').innerText = dbNode + " mis à jour avec succès !";
+                    })
+                    .catch((error) => {
+                        console.error("Erreur Firebase: ", error);
+                    });
+                } else {
+                    alert("Impossible de trouver le tableau dans ce fichier.");
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
