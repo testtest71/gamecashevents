@@ -89,6 +89,64 @@
             font-weight: bold;
             font-size: 0.9em;
         }
+
+        /* --- RESPONSIVE MOBILE (Téléphones) --- */
+        @media (max-width: 600px) {
+            /* On cache l'en-tête classique du tableau */
+            table.report thead {
+                display: none;
+            }
+            
+            /* On force les éléments du tableau à s'empiler en blocs */
+            table.report, table.report tbody, table.report tr, table.report td {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* Chaque match devient une "carte" */
+            table.report tr {
+                margin-bottom: 20px;
+                border: 2px solid var(--neon-green);
+                border-radius: 8px;
+                padding: 0;
+                overflow: hidden;
+            }
+
+            /* On retire les bordures internes par défaut */
+            table.report td {
+                border: none;
+                padding: 10px;
+            }
+
+            /* Style du numéro de Table en haut de la carte */
+            table.report td:nth-child(1) {
+                background-color: #0d0d0d;
+                color: var(--neon-green);
+                font-size: 1.2em;
+                border-bottom: 1px solid #333;
+            }
+            
+            /* On rajoute le mot "Table" automatiquement devant le numéro */
+            table.report td:nth-child(1)::before {
+                content: "Table ";
+            }
+
+            /* Style du "VS" au milieu */
+            table.report td:nth-child(3) {
+                padding: 5px 0;
+                font-size: 1.1em;
+                color: #555;
+            }
+
+            /* Style pour les joueurs (on s'assure que le texte passe à la ligne si besoin) */
+            table.report td:nth-child(2), 
+            table.report td:nth-child(4) {
+                word-wrap: break-word;
+                white-space: normal;
+                font-size: 1.1em;
+            }
+        }
     </style>
 </head>
 <body>
